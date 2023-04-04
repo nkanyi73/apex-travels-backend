@@ -1,5 +1,6 @@
 using ApexTravels.Data;
-using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,9 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddEntityFrameworkNpgsql()
+                .AddDbContext<ApplicationDbContext>(opt => 
+                opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 /*  Configuring options for the Identity User and telling it 
  *  to use the ApplicationDbContext Class to store info */
