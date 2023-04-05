@@ -2,6 +2,9 @@
 
 namespace ApexTravels.ResourceModels
 {
+    /*
+     * Model to specify attributes of Users
+     */
     public class User
     {
         [Required]

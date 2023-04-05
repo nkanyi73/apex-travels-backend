@@ -7,7 +7,11 @@ namespace ApexTravels.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController: ControllerBase
-    {        
+    {
+        /*
+         * Controller defines a dependency on UserManager<IdentityUser>,
+         * with the instance being injected in the constructor  
+         */
         private readonly UserManager<IdentityUser> _userManager;
 
         public UsersController(UserManager<IdentityUser> userManager) 
@@ -15,6 +19,7 @@ namespace ApexTravels.Controllers
             _userManager = userManager;
         }
 
+        // Create a new user
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
@@ -22,6 +27,11 @@ namespace ApexTravels.Controllers
             {
                 return BadRequest(ModelState);
             }
+
+            /*
+             * Extract the parameters obtained from the request and 
+             * use them to create a user.
+             */
 
             var result = await _userManager.CreateAsync(
                 new IdentityUser() { UserName = user.UserName, Email = user.EmailAddress, },
@@ -33,7 +43,20 @@ namespace ApexTravels.Controllers
             }
 
             user.Password = null;
-            return Created("", user);
+            return CreatedAtAction("GetUser", new { username = user.UserName }, user);
+        }
+
+        // Get a user
+        [HttpGet("{username}")]
+        public async Task<ActionResult<User>> GetUser(string username)
+        {
+            IdentityUser user = await _userManager.FindByNameAsync(username);
+            if (user == null) 
+            {
+                return NotFound();
+            }
+
+            return new User { UserName = user.UserName, EmailAddress = user.Email };
         }
         
     }

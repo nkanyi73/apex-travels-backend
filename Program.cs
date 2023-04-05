@@ -5,11 +5,13 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+//Setting up the connection to the Postgres Database
 builder.Services.AddEntityFrameworkNpgsql()
                 .AddDbContext<ApplicationDbContext>(opt => 
                 opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -44,3 +46,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+
