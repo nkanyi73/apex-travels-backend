@@ -1,6 +1,7 @@
 ﻿using ApexTravels.Data;
 using ApexTravels.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -18,7 +19,7 @@ namespace ApexTravels.Controllers
         }
 
 
-        // GET: api/<BlogsController>
+        // GET: api/blogs
         [HttpGet]
         public IActionResult GetBlogs()
         {
@@ -26,14 +27,21 @@ namespace ApexTravels.Controllers
             return new JsonResult(blogs);
         }
 
-        // GET api/<BlogsController>/5
+        // GET api/blogs/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<ActionResult<Blog>> GetBlog(int id) 
         {
-            return "value";
+            var blog = await _context.Blogs.FindAsync(id);
+
+            if (blog == null) 
+            {
+                return NotFound();
+            }
+
+            return Ok(blog);
         }
 
-        // POST api/<BlogsController>
+        // POST api/blogs
         [HttpPost]
         public async Task<ActionResult<Blog>> PostBlog (Blog blog)
         {
@@ -43,7 +51,7 @@ namespace ApexTravels.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (Microsoft.EntityFrameworkCore.DbUpdateException) 
+            catch (DbUpdateException) 
             {
                 return Conflict();
             }
@@ -51,16 +59,58 @@ namespace ApexTravels.Controllers
             return Ok(blog);
         }
 
-        // PUT api/<BlogsController>/5
+        // PUT api/blogs/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<IActionResult> PutBlog(int id, Blog blog)
         {
+            if (id != blog.Id)
+            {
+                return BadRequest();
+            }
+            
+            _context.Entry(blog).State = EntityState.Modified;
+            try 
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException) 
+            {
+                if (!BlogExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            catch(DbUpdateException)
+            {
+                return Conflict();
+            }
+            return NoContent();
+        
         }
 
-        // DELETE api/<BlogsController>/5
+        // DELETE api/blogs/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> DeleteBlog(int id)
         {
+            var blog = await _context.Blogs.FindAsync(id);
+            if (blog == null)
+            {
+                return NotFound();
+            }
+
+            _context.Blogs.Remove(blog);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private bool BlogExists(int id)
+        {
+            return _context.Blogs.Any(e => e.Id == id);
         }
     }
 }
